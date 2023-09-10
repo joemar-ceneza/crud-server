@@ -23,11 +23,17 @@ const createNote = async (req, res) => {
   // get the sent in data off request body
   const { title, body, email } = req.body;
 
+  // find the latest note to determine the next displayId
+  const latestNote = await Note.findOne({}, {}, { sort: { displayId: -1 } });
+
+  const displayId = latestNote ? latestNote.displayId + 1 : 1;
+
   // create a note with it
   const note = await Note.create({
     title,
     body,
     email,
+    displayId,
   });
 
   // respond with the new note
