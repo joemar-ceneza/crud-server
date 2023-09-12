@@ -2,10 +2,23 @@
 const Note = require("../models/note");
 
 const fetchNotes = async (req, res) => {
-  // find the notes
-  const notes = await Note.find();
-  res.json({ notes });
-  // respond with them
+  try {
+    const page = parseInt(req.query.page) || 1; // Current page, default to 1
+    const perPage = parseInt(req.query.perPage) || 10; // Items per page, default to 10
+
+    const totalNotes = await Note.countDocuments(); // Total number of notes
+
+    const totalPages = Math.ceil(totalNotes / perPage); // Calculate total pages
+
+    const notes = await Note.find({}, null, {
+      skip: (page - 1) * perPage, // Calculate the skip value
+      limit: perPage, // Limit the results per page
+    });
+
+    res.json({ notes, totalPages, totalNotes });
+  } catch (error) {
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 };
 
 const fetchNote = async (req, res) => {
